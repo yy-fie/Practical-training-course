@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>网站使用说明</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page-wrap">
+  <div class="page-header">
+    <h2>网站使用说明</h2>
+    <span class="date" id="today"></span>
+  </div>
+
+  <div class="panel">
+    <h3>一、环境准备</h3>
+    <ol class="usage">
+      <li>安装 Python 3.9+（本机已具备）；</li>
+      <li>启动后端接口服务（Demo 02 FastAPI 项目 api1 目录）：
+        双击「启动FastAPI接口项目.bat」，确认输出
+        <i>接口文档：http://127.0.0.1:9001/docs</i>；</li>
+      <li>启动本站：双击「一键启动脚本.bat」，浏览器自动打开登录页
+        <i>http://127.0.0.1:8000/login.html</i>。</li>
+    </ol>
+  </div>
+
+  <div class="panel">
+    <h3>二、登录流程</h3>
+    <ol class="usage">
+      <li>输入 UsersInfo 表中已存在的<b>手机号</b>（或邮箱）与<b>密码</b>；</li>
+      <li>输入右侧<b>验证码</b>（看不清可点击图片或“换一张”）；</li>
+      <li>点击「登录」，前端调用
+        <code>POST http://127.0.0.1:9001/api/users/login</code> 完成验证；</li>
+      <li>验证成功后将用户信息写入 Session（sessionStorage），并跳转到首页；</li>
+      <li>首页<b>左下角</b>显示当前登录用户的<b>真实姓名</b>（来自 UsersInfo.realName）；</li>
+      <li>验证失败时页面提示“用户名或密码错误”，可重新输入。</li>
+    </ol>
+    <div class="shot-box">【截图：登录页效果，可替换为实际截图】</div>
+    <div class="shot-box">【截图：登录成功后首页左下角显示真实姓名】</div>
+  </div>
+
+  <div class="panel">
+    <h3>三、首页操作</h3>
+    <ol class="usage">
+      <li>左侧导航可切换到「按站点分析」「按月份分析」两个页面（右侧 iframe 展示）；</li>
+      <li>左下角用户卡片显示真实姓名与手机号，点击「退出」清除 Session 并回到登录页。</li>
+    </ol>
+    <div class="shot-box">【截图：首页左右布局 + 分析图表效果】</div>
+  </div>
+
+  <div class="panel">
+    <h3>四、目录结构</h3>
+    <pre class="text-muted" style="background:#f6f9ff;padding:14px;border-radius:8px;">
+Demo 01/
+├── login.html                      登录页（数字验证码 + FastAPI 登录验证）
+├── home.html                       首页（左右布局，左下角显示真实姓名）
+├── station_monthly_analysis.html        按站点分析（css/js 已外置）
+├── station_monthly_analysis_by_month.html  按月份分析（css/js 已外置）
+├── 网站使用说明.html                  本说明
+├── 原始文件备份/                    未拆分的原始两个 html
+├── css/                            style.css + 两个分析页样式
+├── js/                             api.js / login.js / home.js + 分析页脚本 + echarts.min.js
+├── 运行环境脚本.bat
+├── 一键启动脚本.bat
+└── 停止网站.bat
+    </pre>
+  </div>
+
+  <script src="js/pages.js"></script>
+</body>
+</html>

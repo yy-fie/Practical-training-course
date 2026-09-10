@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>2020年地铁站点月度统计分析</title>
+    <script type="text/javascript" src="js/echarts.min.js"></script>
+    <link rel="stylesheet" href="css/station_monthly_analysis_by_month.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🚇 2020年地铁站点月度统计分析</h1>
+        
+        <div class="control-panel">
+            <label for="monthSelect">选择月份：</label>
+            <select id="monthSelect" onchange="updateChart()">
+                <option value="2020-01" selected>2020-01</option>
+                <option value="2020-02" >2020-02</option>
+                <option value="2020-03" >2020-03</option>
+                <option value="2020-04" >2020-04</option>
+                <option value="2020-05" >2020-05</option>
+                <option value="2020-06" >2020-06</option>
+                <option value="2020-07" >2020-07</option>
+            </select>
+        </div>
+        
+        <div id="chart" class="chart-container"></div>
+        
+        <div class="legend-box">
+            <h3>图例说明</h3>
+            <div class="legend-item">
+                <div class="legend-color bar-legend"></div>
+                <span>乘车金额 (元) - 柱状图</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color line-legend"></div>
+                <span>乘车人数 (人) - 折线图</span>
+            </div>
+        </div>
+        
+        <div class="stats-info">
+            <h3>📊 月份统计摘要</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">当月总乘车金额</div>
+                    <div class="stat-value" id="totalAmount">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">当月总乘车人数</div>
+                    <div class="stat-value" id="totalCount">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">当月活跃站点数</div>
+                    <div class="stat-value" id="activeStations">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">站点平均乘车金额</div>
+                    <div class="stat-value" id="avgAmount">-</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="top-stations">
+            <h3>🏆 当月TOP10热门站点（按乘车人数）</h3>
+            <div class="station-list" id="topStationsList">
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/station_monthly_analysis_by_month.js"></script>
+</body>
+</html>

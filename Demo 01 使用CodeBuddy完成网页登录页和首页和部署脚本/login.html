@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 - 地铁站点月度客流分析</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login-body">
+  <div class="login-card">
+    <h1>地铁客流统计系统</h1>
+    <p class="sub">Demo 01 · 调用 FastAPI /api/users/login 验证</p>
+
+    <form id="loginForm" autocomplete="on">
+      <div class="field">
+        <label for="username">手机号 / 邮箱</label>
+        <input type="text" id="username" autocomplete="username"
+               placeholder="请输入 UsersInfo 中的手机号或邮箱">
+      </div>
+      <div class="field">
+        <label for="password">密码</label>
+        <input type="password" id="password" autocomplete="current-password"
+               placeholder="请输入登录密码">
+      </div>
+      <div class="field">
+        <label>验证码</label>
+        <div class="captcha-row">
+          <input type="text" id="captchaInput" maxlength="4" placeholder="输入右侧字符">
+          <canvas id="captchaCanvas" width="100" height="40"></canvas>
+          <span class="refresh" id="captchaRefresh">换一张</span>
+        </div>
+      </div>
+      <button type="submit" class="btn" id="loginBtn">登 录</button>
+      <p class="error-msg" id="errorMsg"></p>
+    </form>
+
+    <p class="login-footer">用户名取 UsersInfo 表手机号，密码取 loginPassword</p>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

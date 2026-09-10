@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>2020年地铁站点月度统计分析</title>
+    <script type="text/javascript" src="js/echarts.min.js"></script>
+    <link rel="stylesheet" href="css/station_monthly_analysis.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🚇 2020年地铁站点月度统计分析</h1>
+        
+        <div class="control-panel">
+            <label for="stationSelect">选择出站站点：</label>
+            <select id="stationSelect" onchange="updateChart()">
+                <option value="Sta1" selected>Sta1</option>
+                <option value="Sta10" >Sta10</option>
+                <option value="Sta100" >Sta100</option>
+                <option value="Sta101" >Sta101</option>
+                <option value="Sta102" >Sta102</option>
+                <option value="Sta103" >Sta103</option>
+                <option value="Sta105" >Sta105</option>
+                <option value="Sta106" >Sta106</option>
+                <option value="Sta107" >Sta107</option>
+                <option value="Sta108" >Sta108</option>
+                <option value="Sta109" >Sta109</option>
+                <option value="Sta11" >Sta11</option>
+                <option value="Sta110" >Sta110</option>
+                <option value="Sta111" >Sta111</option>
+                <option value="Sta112" >Sta112</option>
+                <option value="Sta113" >Sta113</option>
+                <option value="Sta114" >Sta114</option>
+                <option value="Sta115" >Sta115</option>
+                <option value="Sta116" >Sta116</option>
+                <option value="Sta117" >Sta117</option>
+                <option value="Sta118" >Sta118</option>
+                <option value="Sta119" >Sta119</option>
+                <option value="Sta12" >Sta12</option>
+                <option value="Sta120" >Sta120</option>
+                <option value="Sta121" >Sta121</option>
+                <option value="Sta122" >Sta122</option>
+                <option value="Sta123" >Sta123</option>
+                <option value="Sta124" >Sta124</option>
+                <option value="Sta125" >Sta125</option>
+                <option value="Sta126" >Sta126</option>
+                <option value="Sta127" >Sta127</option>
+                <option value="Sta128" >Sta128</option>
+                <option value="Sta129" >Sta129</option>
+                <option value="Sta13" >Sta13</option>
+                <option value="Sta130" >Sta130</option>
+                <option value="Sta131" >Sta131</option>
+                <option value="Sta132" >Sta132</option>
+                <option value="Sta133" >Sta133</option>
+                <option value="Sta134" >Sta134</option>
+                <option value="Sta135" >Sta135</option>
+                <option value="Sta136" >Sta136</option>
+                <option value="Sta137" >Sta137</option>
+                <option value="Sta138" >Sta138</option>
+                <option value="Sta139" >Sta139</option>
+                <option value="Sta140" >Sta140</option>
+                <option value="Sta141" >Sta141</option>
+                <option value="Sta142" >Sta142</option>
+                <option value="Sta143" >Sta143</option>
+                <option value="Sta144" >Sta144</option>
+                <option value="Sta145" >Sta145</option>
+                <option value="Sta146" >Sta146</option>
+                <option value="Sta147" >Sta147</option>
+                <option value="Sta148" >Sta148</option>
+                <option value="Sta149" >Sta149</option>
+                <option value="Sta15" >Sta15</option>
+                <option value="Sta150" >Sta150</option>
+                <option value="Sta151" >Sta151</option>
+                <option value="Sta152" >Sta152</option>
+                <option value="Sta153" >Sta153</option>
+                <option value="Sta154" >Sta154</option>
+                <option value="Sta156" >Sta156</option>
+                <option value="Sta157" >Sta157</option>
+                <option value="Sta158" >Sta158</option>
+                <option value="Sta159" >Sta159</option>
+                <option value="Sta16" >Sta16</option>
+                <option value="Sta160" >Sta160</option>
+                <option value="Sta161" >Sta161</option>
+                <option value="Sta162" >Sta162</option>
+                <option value="Sta163" >Sta163</option>
+                <option value="Sta164" >Sta164</option>
+                <option value="Sta165" >Sta165</option>
+                <option value="Sta166" >Sta166</option>
+                <option value="Sta167" >Sta167</option>
+                <option value="Sta168" >Sta168</option>
+                <option value="Sta17" >Sta17</option>
+                <option value="Sta18" >Sta18</option>
+                <option value="Sta19" >Sta19</option>
+                <option value="Sta2" >Sta2</option>
+                <option value="Sta20" >Sta20</option>
+                <option value="Sta21" >Sta21</option>
+                <option value="Sta22" >Sta22</option>
+                <option value="Sta23" >Sta23</option>
+                <option value="Sta24" >Sta24</option>
+                <option value="Sta25" >Sta25</option>
+                <option value="Sta26" >Sta26</option>
+                <option value="Sta27" >Sta27</option>
+                <option value="Sta28" >Sta28</option>
+                <option value="Sta29" >Sta29</option>
+                <option value="Sta3" >Sta3</option>
+                <option value="Sta30" >Sta30</option>
+                <option value="Sta31" >Sta31</option>
+                <option value="Sta32" >Sta32</option>
+                <option value="Sta33" >Sta33</option>
+                <option value="Sta34" >Sta34</option>
+                <option value="Sta35" >Sta35</option>
+                <option value="Sta36" >Sta36</option>
+                <option value="Sta37" >Sta37</option>
+                <option value="Sta38" >Sta38</option>
+                <option value="Sta39" >Sta39</option>
+                <option value="Sta4" >Sta4</option>
+                <option value="Sta40" >Sta40</option>
+                <option value="Sta41" >Sta41</option>
+                <option value="Sta42" >Sta42</option>
+                <option value="Sta43" >Sta43</option>
+                <option value="Sta44" >Sta44</option>
+                <option value="Sta45" >Sta45</option>
+                <option value="Sta46" >Sta46</option>
+                <option value="Sta47" >Sta47</option>
+                <option value="Sta48" >Sta48</option>
+                <option value="Sta49" >Sta49</option>
+                <option value="Sta50" >Sta50</option>
+                <option value="Sta51" >Sta51</option>
+                <option value="Sta52" >Sta52</option>
+                <option value="Sta53" >Sta53</option>
+                <option value="Sta54" >Sta54</option>
+                <option value="Sta55" >Sta55</option>
+                <option value="Sta56" >Sta56</option>
+                <option value="Sta57" >Sta57</option>
+                <option value="Sta58" >Sta58</option>
+                <option value="Sta59" >Sta59</option>
+                <option value="Sta6" >Sta6</option>
+                <option value="Sta60" >Sta60</option>
+                <option value="Sta61" >Sta61</option>
+                <option value="Sta62" >Sta62</option>
+                <option value="Sta63" >Sta63</option>
+                <option value="Sta64" >Sta64</option>
+                <option value="Sta65" >Sta65</option>
+                <option value="Sta66" >Sta66</option>
+                <option value="Sta67" >Sta67</option>
+                <option value="Sta68" >Sta68</option>
+                <option value="Sta69" >Sta69</option>
+                <option value="Sta7" >Sta7</option>
+                <option value="Sta70" >Sta70</option>
+                <option value="Sta71" >Sta71</option>
+                <option value="Sta72" >Sta72</option>
+                <option value="Sta73" >Sta73</option>
+                <option value="Sta74" >Sta74</option>
+                <option value="Sta75" >Sta75</option>
+                <option value="Sta76" >Sta76</option>
+                <option value="Sta77" >Sta77</option>
+                <option value="Sta78" >Sta78</option>
+                <option value="Sta79" >Sta79</option>
+                <option value="Sta8" >Sta8</option>
+                <option value="Sta80" >Sta80</option>
+                <option value="Sta81" >Sta81</option>
+                <option value="Sta82" >Sta82</option>
+                <option value="Sta83" >Sta83</option>
+                <option value="Sta84" >Sta84</option>
+                <option value="Sta85" >Sta85</option>
+                <option value="Sta86" >Sta86</option>
+                <option value="Sta87" >Sta87</option>
+                <option value="Sta88" >Sta88</option>
+                <option value="Sta89" >Sta89</option>
+                <option value="Sta9" >Sta9</option>
+                <option value="Sta90" >Sta90</option>
+                <option value="Sta91" >Sta91</option>
+                <option value="Sta92" >Sta92</option>
+                <option value="Sta93" >Sta93</option>
+                <option value="Sta94" >Sta94</option>
+                <option value="Sta95" >Sta95</option>
+                <option value="Sta96" >Sta96</option>
+                <option value="Sta97" >Sta97</option>
+                <option value="Sta99" >Sta99</option>
+            </select>
+        </div>
+        
+        <div id="chart" class="chart-container"></div>
+        
+        <div class="stats-info">
+            <h3>📊 站点统计摘要</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">年度总乘车金额</div>
+                    <div class="stat-value" id="totalAmount">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">年度总乘车人数</div>
+                    <div class="stat-value" id="totalCount">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">月均乘车金额</div>
+                    <div class="stat-value" id="avgAmount">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">月均乘车人数</div>
+                    <div class="stat-value" id="avgCount">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/station_monthly_analysis.js"></script>
+</body>
+</html>
