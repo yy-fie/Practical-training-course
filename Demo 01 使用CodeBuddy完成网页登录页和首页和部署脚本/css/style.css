@@ -344,6 +344,24 @@ ol.usage {
   background: #f8faff;
 }
 
+.shot-figure {
+  margin: 16px 0;
+}
+
+.shot-figure img {
+  width: 100%;
+  border: 1px solid #e3e8f2;
+  border-radius: 8px;
+  display: block;
+}
+
+.shot-figure figcaption {
+  font-size: 12px;
+  color: #888;
+  margin-top: 6px;
+  text-align: center;
+}
+
 /* ===== 表单页（修改密码等） ===== */
 .page-body {
   padding: 26px;
