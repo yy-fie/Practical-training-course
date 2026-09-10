@@ -187,3 +187,9 @@ class MajorList(BaseModel):
     """专业列表响应模型"""
     total: int
     rows: List[Major]
+
+class PasswordChange(BaseModel):
+    """修改个人密码请求模型"""
+    oldPassword: str = Field(..., description="原始密码")
+    newPassword: str = Field(..., description="修改后密码")
+    confirmPassword: str = Field(..., description="确认修改后密码")

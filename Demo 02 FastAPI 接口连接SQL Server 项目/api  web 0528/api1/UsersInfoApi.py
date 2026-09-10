@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Query
 from typing import List
 from database import get_db_connection
-from schemas import User, UserList, UserCreate
+from schemas import User, UserList, UserCreate, PasswordChange
 
 
 def register_user_routes(app: FastAPI):
@@ -160,7 +160,7 @@ def register_user_routes(app: FastAPI):
     @app.put("/api/users/{user_id}", response_model=User)
     def update_user(user_id: int, user: UserCreate):
         """
-        更新指定ID的用户信息（完整更新）
+        更新指定ID的用户信息（支持完整更新，也支持只修改传入的字段）
         
         - **user_id**: 要更新的用户ID
         - **realName**: 真实姓名
@@ -188,33 +188,19 @@ def register_user_routes(app: FastAPI):
             if count == 0:
                 raise HTTPException(status_code=404, detail=f"用户ID {user_id} 不存在，无法更新")
             
-            update_query = """
-                UPDATE UsersInfo 
-                SET realName = ?, 
-                    phone = ?, 
-                    roleId = ?,
-                    departmentId = ?,
-                    gender = ?,
-                    nativePlace = ?,
-                    politicalStatus = ?,
-                    loginPassword = ?,
-                    idCard = ?,
-                    email = ?
-                WHERE userId = ?
-            """
-            cursor.execute(update_query, (
-                user.realName,
-                user.phone,
-                user.roleId,
-                user.departmentId,
-                user.gender,
-                user.nativePlace,
-                user.politicalStatus,
-                user.loginPassword,
-                user.idCard,
-                user.email,
-                user_id
-            ))
+            # 只更新请求中实际传入的字段（支持完整更新或个别属性修改）
+            data = user.model_dump(exclude_unset=True)
+            data.pop("loginPassword", None)  # 密码请通过修改密码接口单独维护
+
+            if not data:
+                raise HTTPException(status_code=400, detail="没有需要更新的字段")
+
+            assignments = ", ".join("%s = ?" % field for field in data.keys())
+            params = list(data.values())
+            params.append(user_id)
+
+            update_query = "UPDATE UsersInfo SET %s WHERE userId = ?" % assignments
+            cursor.execute(update_query, params)
             
             connection.commit()
             
@@ -514,6 +500,63 @@ def register_user_routes(app: FastAPI):
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"登录失败: {str(e)}")
         
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+
+    @app.put("/api/users/{user_id}/password")
+    def change_password(user_id: int, data: PasswordChange):
+        """
+        修改指定用户的登录密码
+
+        - **user_id**: 用户ID
+        - **oldPassword**: 原始密码
+        - **newPassword**: 修改后密码
+        - **confirmPassword**: 确认修改后密码
+        """
+        connection = None
+        cursor = None
+
+        try:
+            # 1) 三个值的基础校验
+            if not data.oldPassword or not data.newPassword or not data.confirmPassword:
+                raise HTTPException(status_code=400, detail="原始密码、新密码、确认密码都不能为空")
+            if data.newPassword != data.confirmPassword:
+                raise HTTPException(status_code=400, detail="两次输入的新密码不一致")
+            if data.newPassword == data.oldPassword:
+                raise HTTPException(status_code=400, detail="新密码不能与原始密码相同")
+            if len(data.newPassword) < 6:
+                raise HTTPException(status_code=400, detail="新密码长度不能少于6位")
+
+            connection = get_db_connection()
+            cursor = connection.cursor()
+
+            # 2) 校验用户是否存在、原始密码是否正确
+            cursor.execute("SELECT userId, realName, loginPassword FROM UsersInfo WHERE userId = ?", (user_id,))
+            row = cursor.fetchone()
+
+            if not row:
+                raise HTTPException(status_code=404, detail=f"用户ID {user_id} 不存在")
+
+            db_password = row[2]
+            if (db_password or "") != data.oldPassword:
+                raise HTTPException(status_code=400, detail="原始密码错误")
+
+            # 3) 更新密码
+            cursor.execute("UPDATE UsersInfo SET loginPassword = ? WHERE userId = ?", (data.newPassword, user_id))
+            connection.commit()
+
+            return {"msg": "密码修改成功", "status": 200, "userId": user_id}
+
+        except HTTPException:
+            raise
+        except Exception as e:
+            if connection:
+                connection.rollback()
+            raise HTTPException(status_code=500, detail=f"修改密码失败: {str(e)}")
+
         finally:
             if cursor:
                 cursor.close()

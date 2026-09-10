@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人信息修改</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page-body">
+  <div class="form-card">
+    <h2 class="title-gap">个人信息修改</h2>
+
+    <form id="profileForm">
+      <div class="field">
+        <label for="realName">真实姓名</label>
+        <input type="text" id="realName" placeholder="请输入真实姓名">
+      </div>
+      <div class="field">
+        <label for="phone">手机号</label>
+        <input type="text" id="phone" maxlength="11" placeholder="11 位手机号">
+      </div>
+      <div class="field">
+        <label for="gender">性别</label>
+        <select id="gender">
+          <option value="">请选择</option>
+          <option value="男">男</option>
+          <option value="女">女</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="nativePlace">籍贯</label>
+        <input type="text" id="nativePlace" placeholder="如：湖北省">
+      </div>
+      <div class="field">
+        <label for="politicalStatus">政治面貌</label>
+        <select id="politicalStatus">
+          <option value="">请选择</option>
+          <option value="群众">群众</option>
+          <option value="共青团员">共青团员</option>
+          <option value="中共预备党员">中共预备党员</option>
+          <option value="中共党员">中共党员</option>
+          <option value="民主党派">民主党派</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="email">邮箱</label>
+        <input type="text" id="email" placeholder="如：name@example.com">
+      </div>
+      <div class="field">
+        <label for="idCard">身份证号</label>
+        <input type="text" id="idCard" maxlength="18" placeholder="18 位身份证号">
+      </div>
+
+      <button type="submit" class="btn" id="saveBtn">保存修改</button>
+      <p class="error-msg" id="msg"></p>
+    </form>
+
+    <p class="form-tip">
+      只提交发生变化的字段；未登录用户不允许访问本页面。
+    </p>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/profile.js"></script>
+</body>
+</html>
