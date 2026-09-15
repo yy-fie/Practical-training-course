@@ -56,7 +56,7 @@
     btn.textContent = "提交中...";
 
     try {
-      var resp = await fetch(API_BASE + "/api/users/" + user.userId + "/password", {
+      var resp = await apiRequest("/api/users/" + user.userId + "/password", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

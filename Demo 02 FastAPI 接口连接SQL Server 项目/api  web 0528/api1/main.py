@@ -8,6 +8,10 @@ from stationApi import register_station_routes  # 导入站点API路由注册函
 from bookApi import register_book_routes  # 导入图书API路由注册函数
 from buildingApi import register_building_routes  # 导入建筑API路由注册函数
 from UsersInfoApi import register_user_routes
+from permissionApi import register_permission_routes
+from grantApi import register_grant_routes
+from accessControl import register_access_control
+from adminUserApi import register_admin_user_routes
 from floorApi import register_floor_routes  # 导入楼层API路由注册函数
 from majorApi import register_major_routes  # 导入专业API路由注册函数
 
@@ -31,11 +35,16 @@ app.add_middleware(
 )
 
 
+register_access_control(app)
+
 # 注册路由
 register_station_routes(app)
 register_book_routes(app)
 register_building_routes(app)
 register_user_routes(app)
+register_permission_routes(app)
+register_grant_routes(app)
+register_admin_user_routes(app)
 register_floor_routes(app)
 register_major_routes(app)
 

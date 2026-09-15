@@ -362,7 +362,7 @@ ol.usage {
   text-align: center;
 }
 
-/* ===== 表单页（修改密码等） ===== */
+/* ===== 表单页（修改密码 / 个人信息） ===== */
 .page-body {
   padding: 26px;
 }
@@ -401,4 +401,143 @@ ol.usage {
   color: #999;
   margin-top: 14px;
   line-height: 1.8;
+}
+
+/* ===== 数据表格 / 工具条 / 分页（用户管理等后台页面） ===== */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eef1f8;
+  font-size: 13px;
+  text-align: left;
+}
+
+.data-table thead th {
+  background: #f6f9ff;
+  color: #2a3f6e;
+  white-space: nowrap;
+}
+
+.data-table tbody tr:hover {
+  background: #fafcff;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.toolbar input,
+.toolbar select {
+  height: 38px;
+  border: 1px solid #d6dce9;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 13px;
+  outline: none;
+}
+
+.toolbar input:focus,
+.toolbar select:focus {
+  border-color: #5470c6;
+  box-shadow: 0 0 0 3px rgba(84, 112, 198, 0.14);
+}
+
+.btn-inline {
+  width: auto;
+  height: 38px;
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+.btn-secondary {
+  background: #fff;
+  color: #2a3f6e;
+  border: 1px solid #d6dce9;
+}
+
+.btn-secondary:hover {
+  background: #f2f6ff;
+}
+
+.row-btn {
+  height: 28px;
+  padding: 0 10px;
+  margin-right: 6px;
+  border: 1px solid #d6dce9;
+  background: #fff;
+  color: #2a3f6e;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.row-btn:hover {
+  background: #f2f6ff;
+}
+
+.row-btn.danger {
+  color: #d93025;
+  border-color: #f1b6b0;
+}
+
+.row-btn.danger:hover {
+  background: #fdeceb;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: #666;
+}
+
+.pager button {
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid #d6dce9;
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.pager button:hover:not(:disabled) {
+  background: #f2f6ff;
+}
+
+.pager button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-msg {
+  font-size: 13px;
+  color: #d93025;
+  margin-top: 10px;
+}
+
+.perm-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+
+.perm-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #444;
+  cursor: pointer;
 }

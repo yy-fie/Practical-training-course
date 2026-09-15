@@ -26,3 +26,27 @@ async function apiLogin(username, password) {
   }
   return data;
 }
+
+/** 读取当前登录用户（Session） */
+function currentUser() {
+  try {
+    return JSON.parse(sessionStorage.getItem("loginUser") || "null");
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * 带权限信息的请求封装：自动附加 X-User-Id 请求头
+ * 用法：apiRequest("/api/admin/users?page=1&rows=10", { method: "GET" })
+ */
+function apiRequest(path, options) {
+  options = options || {};
+  var headers = options.headers || {};
+  var user = currentUser();
+  if (user && user.userId) {
+    headers["X-User-Id"] = String(user.userId);
+  }
+  options.headers = headers;
+  return fetch(API_BASE + path, options);
+}

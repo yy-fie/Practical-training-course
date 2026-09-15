@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>授权管理</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page-body">
+  <div class="page-header">
+    <h2>授权管理</h2>
+    <span class="date" id="whoami"></span>
+  </div>
+
+  <div class="panel">
+    <h3>发起授权（可设置有效期，到期自动失效）</h3>
+    <div class="toolbar">
+      <input type="number" id="grantUserId" placeholder="被授权用户ID" style="width:150px;">
+      <select id="grantRoleId" style="min-width:150px;"></select>
+      <input type="text" id="grantEndTime" placeholder="失效时间（可空，如 2026-12-31 23:59:59）" style="width:280px;">
+      <input type="text" id="grantRemark" placeholder="备注（可空）" style="width:200px;">
+      <button class="btn btn-inline" id="grantBtn">授权</button>
+    </div>
+    <p class="page-msg" id="msg"></p>
+  </div>
+
+  <div class="panel">
+    <h3>授权台账</h3>
+    <div class="toolbar">
+      <input type="number" id="kwUser" placeholder="按用户ID筛选" style="width:150px;">
+      <select id="kwStatus">
+        <option value="">全部状态</option>
+        <option value="active">生效中</option>
+        <option value="revoked">已撤销</option>
+        <option value="expired">已过期</option>
+      </select>
+      <button class="btn btn-inline" id="searchBtn">查询</button>
+      <button class="btn btn-inline btn-secondary" id="resetBtn">重置</button>
+    </div>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>编号</th><th>用户</th><th>授予角色</th><th>授权人</th>
+          <th>生效时间</th><th>失效时间</th><th>状态</th><th>备注</th><th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="grantRows"></tbody>
+    </table>
+
+    <div class="pager">
+      <span id="pageInfo">-</span>
+      <button id="prevBtn">上一页</button>
+      <button id="nextBtn">下一页</button>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/grants.js"></script>
+</body>
+</html>

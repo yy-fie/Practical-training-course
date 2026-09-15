@@ -15,14 +15,20 @@
   <div class="layout">
     <aside class="sidebar">
       <p class="nav-title">导航菜单</p>
-      <a class="nav-item active" href="station_monthly_analysis.html"
+      <a class="nav-item active" id="nav-analysis1" href="station_monthly_analysis.html"
          data-page="station_monthly_analysis.html" data-title="按站点分析">按站点分析</a>
-      <a class="nav-item" href="station_monthly_analysis_by_month.html"
+      <a class="nav-item" id="nav-analysis2" href="station_monthly_analysis_by_month.html"
          data-page="station_monthly_analysis_by_month.html" data-title="按月份分析">按月份分析</a>
-      <a class="nav-item" href="change_password.html"
+      <a class="nav-item" id="nav-password" href="change_password.html"
          data-page="change_password.html" data-title="修改密码">修改密码</a>
-      <a class="nav-item" href="profile.html"
+      <a class="nav-item" id="nav-profile" href="profile.html"
          data-page="profile.html" data-title="个人信息">个人信息</a>
+      <a class="nav-item" id="nav-users" href="users.html"
+         data-page="users.html" data-title="用户管理" style="display:none;">用户管理</a>
+      <a class="nav-item" id="nav-perms" href="permissions.html"
+         data-page="permissions.html" data-title="权限管理" style="display:none;">权限管理</a>
+      <a class="nav-item" id="nav-grants" href="grants.html"
+         data-page="grants.html" data-title="授权管理" style="display:none;">授权管理</a>
 
       <div class="user-card">
         <div class="avatar" id="userAvatar">用</div>
@@ -39,6 +45,7 @@
     </main>
   </div>
 
+  <script src="js/api.js"></script>
   <script src="js/home.js"></script>
 </body>
 </html>

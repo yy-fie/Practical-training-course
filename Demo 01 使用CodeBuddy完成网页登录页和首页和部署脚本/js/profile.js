@@ -37,7 +37,7 @@
   }
 
   // 打开页面时先读取最新的个人信息
-  fetch(API_BASE + "/api/users/" + userId)
+  apiRequest("/api/users/" + userId)
     .then(function (r) {
       if (!r.ok) throw new Error("加载个人信息失败（HTTP " + r.status + "）");
       return r.json();
@@ -91,7 +91,7 @@
     btn.textContent = "保存中...";
 
     try {
-      var resp = await fetch(API_BASE + "/api/users/" + userId, {
+      var resp = await apiRequest("/api/users/" + userId, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)

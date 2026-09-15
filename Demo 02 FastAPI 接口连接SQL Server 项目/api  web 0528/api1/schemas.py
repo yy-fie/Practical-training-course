@@ -124,7 +124,7 @@ class User(BaseModel):
     gender: Optional[str] = None
     nativePlace: Optional[str] = None
     politicalStatus: Optional[str] = None
-    loginPassword: Optional[str] = None
+    loginPassword: Optional[str] = Field(default=None, exclude=True)
     idCard: Optional[str] = None
     email: Optional[str] = None
     
