@@ -1,0 +1,4 @@
+.station-title { margin-top: 20rpx; }
+.amount { font-size: 36rpx; font-weight: 700; color: var(--ink); overflow-wrap: break-word; }
+.bar-track { background: #EFF6FF; height: 16rpx; border-radius: 8rpx; margin: 24rpx 0 16rpx; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--primary); border-radius: 8rpx; }

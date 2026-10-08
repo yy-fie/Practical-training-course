@@ -1,0 +1,2 @@
+.card .section-title { margin: 0; }
+.logout-section { margin-top: 48rpx; padding-top: 24rpx; border-top: 1rpx solid var(--border); }

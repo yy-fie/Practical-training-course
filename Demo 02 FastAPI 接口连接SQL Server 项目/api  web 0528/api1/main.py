@@ -1,5 +1,6 @@
 # 从 fastapi 库导入必要的类和函数
-from fastapi import FastAPI, Query  # FastAPI主类、查询参数验证类
+from fastapi import FastAPI, Query, Depends  # FastAPI主类、查询参数验证类
+from fastapi.security import HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware  # 跨域资源共享中间件
 import sys  # 系统相关功能模块
 import io  # 输入输出流处理模块
@@ -12,20 +13,25 @@ from permissionApi import register_permission_routes
 from grantApi import register_grant_routes
 from accessControl import register_access_control
 from adminUserApi import register_admin_user_routes
+from authApi import register_auth_routes
 from floorApi import register_floor_routes  # 导入楼层API路由注册函数
 from majorApi import register_major_routes  # 导入专业API路由注册函数
 
 # 设置标准输出编码为UTF-8，解决中文乱码问题
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
 
 # 创建FastAPI应用实例，配置API基本信息
 app = FastAPI(
     title="AI Database API",  # API标题
     description="API接口项目",  # API描述信息
-    version="1.0.0"  # API版本号
+    version="1.1.0",  # API版本号
+    dependencies=[Depends(HTTPBearer(auto_error=False))]
 )
 
-# 添加CORS中间件，允许跨域请求
+register_access_control(app)
+
+# CORS 放在最外层，使 401/403 响应也携带跨域头，前端才能刷新令牌。
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # 允许所有来源的请求
@@ -35,7 +41,7 @@ app.add_middleware(
 )
 
 
-register_access_control(app)
+register_auth_routes(app)
 
 # 注册路由
 register_station_routes(app)

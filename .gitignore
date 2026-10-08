@@ -2,3 +2,8 @@ AI.bak
 api.zip
 __pycache__/
 *.py[cod]
+.browser-tools/
+.local/
+.test-artifacts/
+.env
+project.private.config.json

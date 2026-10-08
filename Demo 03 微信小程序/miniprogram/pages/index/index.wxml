@@ -1,0 +1,24 @@
+<view class="page">
+  <view class="badge">移动工作台</view>
+  <view class="title greeting">你好，{{name || '用户'}}</view>
+  <view class="subtitle">站点信息与个人事务，一处处理。</view>
+  <view wx:if="{{error}}" class="error">{{error}}<button class="secondary" bindtap="load">重新加载</button></view>
+  <view wx:if="{{loading}}" class="card muted">正在更新工作台…</view>
+  <view class="two-columns">
+    <view><view class="card compact"><view class="muted">可查询站点</view><view class="value">{{stationCount}}</view></view></view>
+    <view><view class="card compact"><view class="muted">站点维护</view><view class="value">{{canAdd ? '可新增' : '只读'}}</view></view></view>
+  </view>
+  <view class="section-title">常用功能</view>
+  <view wx:if="{{canView}}" class="card">
+    <view class="station-name">站点与客流</view>
+    <view class="subtitle">按名称、线路和区域查找站点，查看月度乘车统计。</view>
+    <button class="primary" bindtap="openStations">查询站点</button>
+  </view>
+  <view wx:if="{{canAdd}}" class="card">
+    <view class="station-name">新增站点</view>
+    <view class="subtitle">维护站点名称、所属线路和区域。</view>
+    <button class="secondary" bindtap="openCreate">添加站点</button>
+  </view>
+  <view wx:if="{{!canView && !canAdd && !loading && !error}}" class="card muted">当前角色没有站点业务权限，可在“我的”查看个人信息。</view>
+  <button class="secondary" bindtap="openProfile">个人中心</button>
+</view>

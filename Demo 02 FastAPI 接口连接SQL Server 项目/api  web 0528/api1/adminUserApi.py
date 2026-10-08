@@ -8,7 +8,7 @@
   user:delete 删除用户（仅下一层及以下；系管理员限本系）
   role:assign 调整用户角色（仅下一层及以下；系管理员限本系）
 
-请求头：X-User-Id: <当前登录用户ID>
+请求头：Authorization: Bearer <访问令牌>
 """
 
 from fastapi import FastAPI, HTTPException, Query, Depends
@@ -16,6 +16,8 @@ from fastapi import FastAPI, HTTPException, Query, Depends
 from database import get_db_connection
 from schemas import User, UserList
 from permissionApi import require_permission, subordinate_role_ids, descendant_role_ids, load_user
+from security import hash_password
+from authApi import revoke_user_sessions
 
 DEPT_SCOPE_ROLE = 2   # 系管理员：按院系隔离
 TEACHER_ROLE = 3      # 教师：只看/改本系学生
@@ -30,11 +32,13 @@ def _target_in_scope(me, target_user_id, mode, allow_self=True):
 
     target_role = target[2]
     target_dept = target[3]
+    if allow_self and target_user_id == me['userId']:
+        return target
 
     if mode == "self_child":
         allowed = set(subordinate_role_ids(me["roleId"]))
-        if allow_self:
-            allowed.add(me["roleId"])
+        if allow_self and target_user_id == me['userId']:
+            allowed.add(target_role)
     else:
         allowed = set(descendant_role_ids(me["roleId"]))
 
@@ -43,6 +47,8 @@ def _target_in_scope(me, target_user_id, mode, allow_self=True):
 
     if me["roleId"] == DEPT_SCOPE_ROLE and target_dept != me["departmentId"]:
         raise HTTPException(status_code=403, detail="只能操作本系用户")
+    if me['roleId'] == TEACHER_ROLE and target_dept != me['departmentId']:
+        raise HTTPException(status_code=403, detail="只能操作本系学生")
 
     return target
 
@@ -140,6 +146,8 @@ def register_admin_user_routes(app: FastAPI):
     ):
         """调整用户角色（仅下级角色，且不超出数据范围）"""
         _target_in_scope(me, user_id, "descendant", allow_self=False)
+        if roleId not in descendant_role_ids(me['roleId']):
+            raise HTTPException(403, '不可授予本人同级或上级角色')
         connection = None
         cursor = None
         try:
@@ -166,7 +174,7 @@ def register_admin_user_routes(app: FastAPI):
     @app.put("/api/admin/users/{user_id}/reset-password")
     def admin_reset_password(
         user_id: int,
-        newPassword: str = Query(default="123456", min_length=6),
+        newPassword: str = Query(default="123456", min_length=6, max_length=128),
         me=Depends(require_permission("user:reset")),
     ):
         """重置密码（本人 + 直接下一层；系管理员限本系）"""
@@ -176,7 +184,8 @@ def register_admin_user_routes(app: FastAPI):
         try:
             connection = get_db_connection()
             cursor = connection.cursor()
-            cursor.execute("UPDATE UsersInfo SET loginPassword = ? WHERE userId = ?", (newPassword, user_id))
+            cursor.execute("UPDATE UsersInfo SET loginPassword = ?, passwordHash=? WHERE userId = ?", ('', hash_password(newPassword), user_id))
+            revoke_user_sessions(cursor, user_id)
             connection.commit()
             return {"msg": "密码已重置", "userId": user_id}
         except HTTPException:

@@ -14,14 +14,16 @@
   }
 
   var name = user.realName || user.phone || "用户";
+  document.querySelectorAll('.nav-item').forEach(function (item) { item.style.display = 'none'; });
+  document.getElementById('contentFrame').src = 'about:blank';
 
   // 角色分权：按权限码控制左侧菜单显示
-  apiRequest("/api/me/permissions")
+  function loadPermissions() { return apiRequest("/api/me/permissions")
     .then(function (r) {
       return r.ok ? r.json() : null;
     })
     .then(function (me) {
-      if (!me) return;
+      if (!me) throw new Error('权限加载失败，请重新登录');
       var perms = me.permissions || [];
 
       function showNav(id, code) {
@@ -39,17 +41,24 @@
       showNav("nav-grants", "role:assign");
 
       // 若当前默认页无权限，自动切到第一个可见菜单
-      if (perms.indexOf("analysis:view") === -1) {
+      var active = document.querySelector('.nav-item.active');
+      if (!active || active.style.display === 'none' || document.getElementById('contentFrame').getAttribute('src') === 'about:blank') {
         var visible = null;
         document.querySelectorAll(".nav-item").forEach(function (item) {
           if (!visible && item.style.display !== "none") visible = item;
         });
         if (visible) visible.click();
+        else {
+          document.getElementById('contentFrame').src = 'about:blank';
+          document.getElementById('pageTitle').textContent = '当前账号暂无可用菜单';
+        }
       }
     })
-    .catch(function () {
-      /* 权限接口异常时保持默认菜单 */
-    });
+    .catch(function (error) {
+      document.querySelectorAll('.nav-item').forEach(function (item) { item.style.display = 'none'; });
+      document.getElementById('contentFrame').src = 'about:blank';
+      document.getElementById('pageTitle').textContent = error.message || '权限加载失败，请刷新重试';
+    }); }
 
   // 左下角显示真实姓名
   document.getElementById("userName").textContent = name;
@@ -79,8 +88,13 @@
   });
 
   // 退出：清除 Session 并回到登录页
-  document.getElementById("logoutBtn").addEventListener("click", function () {
-    sessionStorage.removeItem("loginUser");
-    window.location.href = "login.html";
+  document.getElementById("logoutBtn").addEventListener("click", async function () {
+    this.disabled = true;
+    try { await apiLogout(); }
+    catch (error) { document.getElementById('pageTitle').textContent = error.message || '退出失败，请重试'; }
+    finally { this.disabled = false; }
   });
+  loadPermissions();
+  setInterval(loadPermissions, 60000);
+  window.addEventListener('focus', loadPermissions);
 })();

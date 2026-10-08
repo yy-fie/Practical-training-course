@@ -76,7 +76,7 @@
       }
 
       show("密码修改成功，请使用新密码重新登录...", true);
-      sessionStorage.removeItem("loginUser");
+      clearSession();
 
       setTimeout(function () {
         if (window.top && window.top !== window) {

@@ -1,0 +1,13 @@
+<view class="page">
+  <view class="title">添加站点</view>
+  <view class="subtitle">维护业务数据，方便后续查询与分析。</view>
+  <view wx:if="{{loading}}" class="empty">正在确认操作权限…</view>
+  <view wx:elif="{{!allowed}}" class="empty">当前账号没有新增站点权限。</view>
+  <view wx:else class="card">
+    <view class="field"><label for="station_name" class="label">站点名称</label><input id="station_name" class="input" focus-class="input-focus" value="{{station_name}}" maxlength="100" data-field="station_name" bindinput="onInput" placeholder="例如：人民广场" /></view>
+    <view class="field"><label for="line" class="label">所属线路</label><input id="line" class="input" focus-class="input-focus" value="{{line}}" maxlength="50" data-field="line" bindinput="onInput" placeholder="例如：1号线" /></view>
+    <view class="field"><label for="district" class="label">所属区域</label><input id="district" class="input" focus-class="input-focus" value="{{district}}" maxlength="50" data-field="district" bindinput="onInput" placeholder="例如：黄浦区" /></view>
+    <button class="primary" loading="{{submitting}}" disabled="{{submitting}}" bindtap="submit">{{submitting ? '正在保存' : '保存站点'}}</button>
+  </view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+</view>

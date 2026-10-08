@@ -1,0 +1,12 @@
+{
+  "appid": "wx08f1707cf311bb45",
+  "projectname": "metro-rbac-training",
+  "compileType": "miniprogram",
+  "miniprogramRoot": "miniprogram/",
+  "setting": {
+    "es6": true,
+    "minified": true,
+    "urlCheck": false,
+    "minifyWXML": true
+  }
+}

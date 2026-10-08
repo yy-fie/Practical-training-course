@@ -1,95 +1,93 @@
-# -*- coding: utf-8 -*-
-"""统一访问控制中间件（让功能逻辑一致）
-
-规则：
-1) 旧接口（/api/users、/api/stations 等）同样受权限码约束，避免绕过 /api/admin 的权限体系；
-2) 本人接口（/api/users/{id} 的 GET/PUT、/api/users/{id}/password）允许本人操作；
-3) /api/admin/*、/api/me/* 由各自依赖校验，这里放行；
-4) 公开接口（登录、文档）放行。
-"""
-
+"""所有 API 验证 Bearer 会话；旧用户接口复用管理接口的数据范围规则。"""
 import re
-
-from fastapi import Request
+from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
+from starlette.concurrency import run_in_threadpool
+from authApi import authenticate_request
+from permissionApi import current_user
 
-from permissionApi import user_permissions
+PUBLIC_PATHS = {'/', '/docs', '/docs/oauth2-redirect', '/redoc', '/openapi.json',
+                '/api/auth/login', '/api/auth/refresh', '/api/users/login'}
+PERSONAL_FIELDS = {'realName', 'phone', 'gender', 'nativePlace', 'politicalStatus', 'email', 'idCard'}
 
-PUBLIC_PATHS = {"/", "/docs", "/redoc", "/openapi.json", "/api/users/login"}
 
-RULES = [
-    (re.compile(r"^/api/users/?$"), {"GET": "user:list", "POST": "user:edit"}),
-    (re.compile(r"^/api/users/search"), {"GET": "user:list"}),
-    (re.compile(r"^/api/usersDelete"), {"DELETE": "user:delete"}),
-    (re.compile(r"^/api/users/(?P<uid>\d+)/password"), {"PUT": "self_or:user:reset"}),
-    (
-        re.compile(r"^/api/users/(?P<uid>\d+)"),
-        {
-            "GET": "self_or:user:list",
-            "PUT": "self_or:user:edit",
-            "DELETE": "user:delete",
-        },
-    ),
-    (
-        re.compile(r"^/api/(stations|books|buildings|floors|majors)"),
-        {
-            "GET": "analysis:view",
-            "POST": "user:edit",
-            "PUT": "user:edit",
-            "DELETE": "user:delete",
-        },
-    ),
-]
+def require_code(me, code):
+    if code not in me['permissions']:
+        raise HTTPException(403, '没有权限：需要 ' + code)
+
+
+def check_legacy_scope(me, user_id):
+    from adminUserApi import _target_in_scope, TEACHER_ROLE, STUDENT_ROLE
+    target = _target_in_scope(me, user_id, 'descendant', allow_self=False)
+    if me['roleId'] == TEACHER_ROLE and (target[2] != STUDENT_ROLE or target[3] != me['departmentId']):
+        raise HTTPException(403, '教师只能操作本系学生')
 
 
 def register_access_control(app):
-    @app.middleware("http")
+    @app.middleware('http')
     async def access_control(request: Request, call_next):
-        path = request.url.path
+        path = request.url.path.rstrip('/') or '/'
         method = request.method.upper()
-
-        if path in PUBLIC_PATHS or path.startswith("/docs") or path.startswith("/redoc"):
+        if method == 'OPTIONS' or path in PUBLIC_PATHS or not path.startswith('/api/'):
             return await call_next(request)
-        if path.startswith("/api/admin") or path.startswith("/api/me"):
-            return await call_next(request)
-
-        rule = None
-        match = None
-        for pattern, methods in RULES:
-            m = pattern.match(path)
-            if m and method in methods:
-                rule = methods[method]
-                match = m
-                break
-        if not rule:
-            return await call_next(request)
-
-        x_user_id = request.headers.get("X-User-Id")
-        if not x_user_id:
-            return JSONResponse(
-                status_code=401,
-                content={"detail": "未提供登录信息（请求头 X-User-Id）"},
-            )
         try:
-            user_id = int(x_user_id)
-        except ValueError:
-            return JSONResponse(status_code=401, content={"detail": "登录信息格式错误"})
-
-        user, perms = user_permissions(user_id)
-        if not user:
-            return JSONResponse(status_code=401, content={"detail": "登录用户不存在"})
-
-        if rule.startswith("self_or:"):
-            code = rule.split(":", 1)[1]
-            uid = None
-            if match is not None and "uid" in match.groupdict():
-                uid = int(match.group("uid"))
-            if uid is not None and user[0] == uid:
+            uid = await run_in_threadpool(authenticate_request, request)
+            me = await run_in_threadpool(current_user, uid)
+            request.state.me = me
+            if path.startswith('/api/admin/') or path.startswith('/api/me/') or path == '/api/auth/logout':
                 return await call_next(request)
-            if code not in perms:
-                return JSONResponse(status_code=403, content={"detail": "没有权限：需要 " + code})
+            user_match = re.fullmatch(r'/api/users/(\d+)(/password)?', path)
+            if user_match:
+                target_id = int(user_match.group(1))
+                if user_match.group(2):
+                    if target_id != uid:
+                        raise HTTPException(403, '只能修改本人密码，请使用管理员重置接口')
+                    require_code(me, 'password:self')
+                elif method == 'GET' and target_id == uid:
+                    pass
+                elif method == 'PUT' and target_id == uid:
+                    require_code(me, 'profile:self')
+                    payload = await request.json()
+                    if not isinstance(payload, dict) or set(payload) - PERSONAL_FIELDS:
+                        raise HTTPException(403, '个人信息接口不可修改角色、院系或密码')
+                else:
+                    code = {'GET': 'user:list', 'PUT': 'user:edit', 'DELETE': 'user:delete'}.get(method)
+                    if code:
+                        require_code(me, code)
+                        await run_in_threadpool(check_legacy_scope, me, target_id)
+                    if method == 'PUT':
+                        payload = await request.json()
+                        if not isinstance(payload, dict) or set(payload) - PERSONAL_FIELDS:
+                            raise HTTPException(403, '调整角色请使用授权接口')
+            elif path in ('/api/users', '/api/users/search'):
+                if method == 'GET':
+                    require_code(me, 'user:list')
+                    if me['roleId'] in (2, 3):
+                        raise HTTPException(403, '请使用 /api/admin/users 查询管理范围内的用户')
+                elif method == 'POST':
+                    require_code(me, 'user:edit')
+                    payload = await request.json()
+                    from permissionApi import descendant_role_ids
+                    allowed = await run_in_threadpool(descendant_role_ids, me['roleId'])
+                    if not isinstance(payload, dict) or payload.get('roleId') not in allowed:
+                        raise HTTPException(403, '只能新增下级角色的用户')
+                    if me['roleId'] in (2, 3) and payload.get('departmentId') != me['departmentId']:
+                        raise HTTPException(403, '只能新增本系用户')
+            elif path == '/api/usersDelete' and method == 'DELETE':
+                require_code(me, 'user:delete')
+                for target in request.query_params.getlist('user_ids'):
+                    try:
+                        target_id = int(target)
+                    except ValueError:
+                        raise HTTPException(422, '用户 ID 必须为整数')
+                    await run_in_threadpool(check_legacy_scope, me, target_id)
+            elif re.match(r'^/api/(stations|books|buildings|floors|majors)', path):
+                code = {'GET': 'analysis:view', 'POST': 'user:edit', 'PUT': 'user:edit',
+                        'DELETE': 'user:delete'}.get(method)
+                if code:
+                    require_code(me, code)
             return await call_next(request)
-
-        if rule not in perms:
-            return JSONResponse(status_code=403, content={"detail": "没有权限：需要 " + rule})
-        return await call_next(request)
+        except HTTPException as exc:
+            return JSONResponse(status_code=exc.status_code, content={'detail': exc.detail}, headers=exc.headers)
+        except (ValueError, TypeError):
+            return JSONResponse(status_code=422, content={'detail': '请求参数格式错误'})

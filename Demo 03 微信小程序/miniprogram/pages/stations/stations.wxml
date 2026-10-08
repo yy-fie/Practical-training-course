@@ -1,0 +1,25 @@
+<view class="page">
+  <view class="title">找到你的站点</view>
+  <view class="subtitle">按站点名称、线路和区域查询。</view>
+  <view wx:if="{{canView}}" class="card">
+    <label for="keyword" class="label">站点名称</label>
+    <input id="keyword" class="input" focus-class="input-focus" value="{{keyword}}" maxlength="100" placeholder="输入名称关键词" bindinput="onInput" confirm-type="search" bindconfirm="search" />
+    <view class="two-columns">
+      <view><view class="field"><view class="label">线路</view><picker mode="selector" range="{{lines}}" value="{{lineIndex}}" data-field="lineIndex" bindchange="filter"><view class="select">{{lines[lineIndex]}}</view></picker></view></view>
+      <view><view class="field"><view class="label">区域</view><picker mode="selector" range="{{districts}}" value="{{districtIndex}}" data-field="districtIndex" bindchange="filter"><view class="select">{{districts[districtIndex]}}</view></picker></view></view>
+    </view>
+    <button class="primary" disabled="{{loading}}" bindtap="search">查询站点</button>
+  </view>
+  <button wx:if="{{canAdd}}" class="secondary" bindtap="add">新增站点</button>
+  <view wx:if="{{error}}" class="error">{{error}}<button class="secondary" bindtap="search">重试查询</button></view>
+  <view wx:if="{{canView}}" class="section-title">查询结果 <text class="muted">共 {{total}} 个站点</text></view>
+  <view wx:for="{{items}}" wx:key="station_id" class="card" data-id="{{item.station_id}}" bindtap="open" aria-role="button" aria-label="查看{{item.station_name}}的客流">
+    <view class="row"><view class="station-name">{{item.station_name}}</view><text class="link">查看</text></view>
+    <view class="station-meta">{{item.line || '未设置线路'}} · {{item.district || '未设置区域'}}</view>
+  </view>
+  <view wx:if="{{loading}}" class="empty">正在加载站点…</view>
+  <view wx:elif="{{!canView}}" class="empty">当前账号没有站点查询权限。</view>
+  <view wx:elif="{{!items.length && !error}}" class="empty">没有匹配的站点，试试其他名称或筛选条件。</view>
+  <view wx:elif="{{items.length && !hasMore}}" class="empty">已显示全部结果</view>
+  <button wx:if="{{hasMore && !loading}}" class="secondary" bindtap="onReachBottom">加载更多</button>
+</view>

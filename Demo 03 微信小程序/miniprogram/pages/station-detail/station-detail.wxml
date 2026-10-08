@@ -1,0 +1,19 @@
+<view class="page">
+  <view wx:if="{{station}}">
+    <view class="badge">{{station.line || '站点信息'}}</view>
+    <view class="title station-title">{{station.station_name}}</view>
+    <view class="subtitle">{{station.district || '未设置区域'}} · 月度乘车统计</view>
+    <view class="two-columns">
+      <view><view class="card compact"><view class="muted">累计乘车次数</view><view class="value">{{count}}</view></view></view>
+      <view><view class="card compact"><view class="muted">累计金额 / 元</view><view class="amount">{{amount}}</view></view></view>
+    </view>
+  </view>
+  <view wx:if="{{error}}" class="error">{{error}}<button class="secondary" bindtap="load">重新加载</button></view>
+  <view wx:if="{{loading}}" class="empty">正在加载客流数据…</view>
+  <view wx:elif="{{!months.length && !error}}" class="empty">这个站点还没有乘车统计记录。</view>
+  <view wx:for="{{months}}" wx:key="month" class="card">
+    <view class="row"><view class="station-name">{{item.month}}</view><view class="badge">{{item.count}} 次</view></view>
+    <view class="bar-track"><view class="bar-fill" style="width: {{item.percent}}%;"></view></view>
+    <view class="muted">乘车金额 {{item.amount}} 元</view>
+  </view>
+</view>

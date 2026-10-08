@@ -7,8 +7,10 @@
     }
   }
 
-  function show(text) {
-    document.getElementById("msg").textContent = text || "";
+  function show(text, ok) {
+    var msg = document.getElementById("msg");
+    msg.textContent = text || "";
+    msg.style.color = ok ? '#237342' : '#b42318';
   }
 
   var page = 1;
@@ -57,14 +59,15 @@
   }
 
   function statusText(s) {
+    if (s === "pending") return "待生效";
     if (s === "active") return "生效中";
     if (s === "revoked") return "已撤销";
     if (s === "expired") return "已过期";
     return s || "";
   }
 
-  function loadGrants() {
-    show("");
+  function loadGrants(message) {
+    show(message || "", Boolean(message));
     var params = ["page=" + page, "rows=" + rows];
     var uid = document.getElementById("kwUser").value.trim();
     var status = document.getElementById("kwStatus").value;
@@ -89,6 +92,11 @@
   }
 
   function renderRows(list) {
+    function escape(value) {
+      var el = document.createElement('span');
+      el.textContent = value == null ? '' : String(value);
+      return el.innerHTML;
+    }
     var tbody = document.getElementById("grantRows");
     tbody.innerHTML = "";
     if (!list.length) {
@@ -98,18 +106,18 @@
 
     list.forEach(function (g) {
       var tr = document.createElement("tr");
-      var action = g.status === "active"
+      var action = g.status === "active" || g.status === "pending"
         ? '<button class="row-btn danger" data-revoke="' + g.grantId + '">撤销</button>'
         : '<span style="color:#999;">—</span>';
       tr.innerHTML =
         "<td>" + g.grantId + "</td>" +
-        "<td>" + (g.realName || "") + "（" + g.userId + "）</td>" +
-        "<td>" + (g.roleName || g.roleId) + "</td>" +
-        "<td>" + (g.grantedByName || g.grantedBy) + "</td>" +
-        "<td>" + (g.startTime || "") + "</td>" +
-        "<td>" + (g.endTime || "永久") + "</td>" +
+        "<td>" + escape(g.realName || "") + "（" + g.userId + "）</td>" +
+        "<td>" + escape(g.roleName || g.roleId) + "</td>" +
+        "<td>" + escape(g.grantedByName || g.grantedBy) + "</td>" +
+        "<td>" + escape(g.startTime || "") + "</td>" +
+        "<td>" + escape(g.endTime || "永久") + "</td>" +
         "<td>" + statusText(g.status) + "</td>" +
-        "<td>" + (g.remark || "") + "</td>" +
+        "<td>" + escape(g.remark || "") + "</td>" +
         "<td>" + action + "</td>";
       tbody.appendChild(tr);
     });
@@ -117,16 +125,17 @@
     tbody.querySelectorAll("button[data-revoke]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var id = btn.getAttribute("data-revoke");
-        if (!confirm("确定撤销授权 " + id + " 吗？用户角色将回退为原角色。")) return;
+        if (!confirm("确定撤销授权 " + id + " 吗？撤销后该时间段不再提供临时角色权限。")) return;
+        btn.disabled = true;
         apiRequest("/api/admin/grants/" + id + "/revoke", { method: "PUT" })
           .then(function (r) {
             return r.json().catch(function () { return null; }).then(function (d) {
               if (!r.ok) throw new Error((d && d.detail) || ("撤销失败（HTTP " + r.status + "）"));
-              show("已撤销授权 " + id);
-              loadGrants();
+              loadGrants("已撤销授权 " + id);
             });
           })
-          .catch(function (e) { show(e.message); });
+          .catch(function (e) { show(e.message); })
+          .finally(function () { btn.disabled = false; });
       });
     });
   }
@@ -134,13 +143,21 @@
   document.getElementById("grantBtn").addEventListener("click", function () {
     var uid = document.getElementById("grantUserId").value.trim();
     var rid = document.getElementById("grantRoleId").value;
+    var startTime = document.getElementById("grantStartTime").value;
     var endTime = document.getElementById("grantEndTime").value.trim();
     var remark = document.getElementById("grantRemark").value.trim();
     if (!uid || !rid) {
       show("请填写被授权用户ID并选择角色");
       return;
     }
+    if (endTime && startTime && endTime <= startTime) {
+      show('失效时间必须晚于生效时间'); return;
+    }
+    var btn = document.getElementById('grantBtn');
+    btn.disabled = true;
+    btn.textContent = '提交中…';
     var url = "/api/admin/grants?userId=" + encodeURIComponent(uid) + "&roleId=" + encodeURIComponent(rid);
+    if (startTime) url += "&startTime=" + encodeURIComponent(startTime);
     if (endTime) url += "&endTime=" + encodeURIComponent(endTime);
     if (remark) url += "&remark=" + encodeURIComponent(remark);
 
@@ -148,11 +165,11 @@
       .then(function (r) {
         return r.json().catch(function () { return null; }).then(function (d) {
           if (!r.ok) throw new Error((d && d.detail) || ("授权失败（HTTP " + r.status + "）"));
-          show("授权成功：用户 " + uid + " 已获得角色（原角色 " + d.originalRoleId + "）");
-          loadGrants();
+          loadGrants("授权成功：用户 " + uid + "，" + statusText(d.status));
         });
       })
-      .catch(function (e) { show(e.message); });
+      .catch(function (e) { show(e.message); })
+      .finally(function () { btn.disabled = false; btn.textContent = '授权'; });
   });
 
   document.getElementById("searchBtn").addEventListener("click", function () { page = 1; loadGrants(); });

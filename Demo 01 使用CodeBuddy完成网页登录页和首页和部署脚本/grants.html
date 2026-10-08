@@ -6,7 +6,7 @@
   <title>授权管理</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="page-body">
+<body class="page-body grants-page">
   <div class="page-header">
     <h2>授权管理</h2>
     <span class="date" id="whoami"></span>
@@ -15,29 +15,33 @@
   <div class="panel">
     <h3>发起授权（可设置有效期，到期自动失效）</h3>
     <div class="toolbar">
-      <input type="number" id="grantUserId" placeholder="被授权用户ID" style="width:150px;">
-      <select id="grantRoleId" style="min-width:150px;"></select>
-      <input type="text" id="grantEndTime" placeholder="失效时间（可空，如 2026-12-31 23:59:59）" style="width:280px;">
-      <input type="text" id="grantRemark" placeholder="备注（可空）" style="width:200px;">
+      <label for="grantUserId">用户 ID <input type="number" min="1" id="grantUserId" style="width:150px;"></label>
+      <label for="grantRoleId">授予角色 <select id="grantRoleId" style="min-width:150px;"></select></label>
+      <label for="grantStartTime">生效时间（空为立即） <input type="datetime-local" id="grantStartTime"></label>
+      <label for="grantEndTime">失效时间（空为永久） <input type="datetime-local" id="grantEndTime"></label>
+      <label for="grantRemark">备注 <input type="text" maxlength="200" id="grantRemark" style="width:200px;"></label>
       <button class="btn btn-inline" id="grantBtn">授权</button>
     </div>
-    <p class="page-msg" id="msg"></p>
+    <p>时间按数据库服务器本地时间填写。同一用户可配置多个不重叠的时间段；到期后恢复永久角色权限。</p>
+    <p class="page-msg" id="msg" role="status" aria-live="polite"></p>
   </div>
 
   <div class="panel">
     <h3>授权台账</h3>
     <div class="toolbar">
-      <input type="number" id="kwUser" placeholder="按用户ID筛选" style="width:150px;">
-      <select id="kwStatus">
+      <label for="kwUser">用户 ID <input type="number" min="1" id="kwUser" style="width:150px;"></label>
+      <label for="kwStatus">状态 <select id="kwStatus">
         <option value="">全部状态</option>
+        <option value="pending">待生效</option>
         <option value="active">生效中</option>
         <option value="revoked">已撤销</option>
         <option value="expired">已过期</option>
-      </select>
+      </select></label>
       <button class="btn btn-inline" id="searchBtn">查询</button>
       <button class="btn btn-inline btn-secondary" id="resetBtn">重置</button>
     </div>
 
+    <div class="table-scroll" tabindex="0" role="region" aria-label="授权台账，可横向滚动查看">
     <table class="data-table">
       <thead>
         <tr>
@@ -47,6 +51,7 @@
       </thead>
       <tbody id="grantRows"></tbody>
     </table>
+    </div>
 
     <div class="pager">
       <span id="pageInfo">-</span>

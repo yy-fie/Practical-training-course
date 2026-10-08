@@ -1,0 +1,4 @@
+.login-heading { padding: 64rpx 8rpx 16rpx; }
+.login-heading .title { margin-top: 28rpx; }
+.login-heading .subtitle { margin-top: 24rpx; }
+.card .section-title { margin-top: 0; }

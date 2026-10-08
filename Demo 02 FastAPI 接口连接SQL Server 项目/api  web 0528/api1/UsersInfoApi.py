@@ -1,7 +1,9 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from typing import List
 from database import get_db_connection
 from schemas import User, UserList, UserCreate, PasswordChange
+from security import hash_password, verify_stored_password
+from authApi import login, LoginInput, revoke_user_sessions
 
 
 def register_user_routes(app: FastAPI):
@@ -30,9 +32,13 @@ def register_user_routes(app: FastAPI):
             connection = get_db_connection()
             cursor = connection.cursor()
             
+            if not user.loginPassword or len(user.loginPassword) < 6:
+                raise HTTPException(400, '新用户密码至少需要 6 位')
+            encoded = hash_password(user.loginPassword)
             insert_query = """
-                INSERT INTO UsersInfo (realName, phone, roleId, departmentId, gender, nativePlace, politicalStatus, loginPassword, idCard, email) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO UsersInfo (realName, phone, roleId, departmentId, gender, nativePlace, politicalStatus, loginPassword, idCard, email, passwordHash)
+                OUTPUT INSERTED.userId
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """
             cursor.execute(insert_query, (
                 user.realName,
@@ -42,15 +48,16 @@ def register_user_routes(app: FastAPI):
                 user.gender,
                 user.nativePlace,
                 user.politicalStatus,
-                user.loginPassword,
+                '',
                 user.idCard,
-                user.email
+                user.email,
+                encoded
             ))
             
+            created_id = cursor.fetchone()[0]
             connection.commit()
-            
-            select_query = "SELECT TOP 1 userId, realName, phone, roleId, departmentId, gender, nativePlace, politicalStatus, loginPassword, idCard, email FROM UsersInfo ORDER BY userId DESC"
-            cursor.execute(select_query)
+            select_query = "SELECT userId, realName, phone, roleId, departmentId, gender, nativePlace, politicalStatus, loginPassword, idCard, email FROM UsersInfo WHERE userId=?"
+            cursor.execute(select_query, (created_id,))
             row = cursor.fetchone()
             
             if row:
@@ -60,6 +67,10 @@ def register_user_routes(app: FastAPI):
             else:
                 raise HTTPException(status_code=500, detail="创建用户失败")
             
+        except HTTPException:
+            if connection:
+                connection.rollback()
+            raise
         except Exception as e:
             if connection:
                 connection.rollback()
@@ -463,48 +474,16 @@ def register_user_routes(app: FastAPI):
             if connection:
                 connection.close()
 
-    @app.post("/api/users/login", response_model=User)
-    def login_user(username: str = Query(..., description="用户名（手机号或邮箱）"), password: str = Query(..., description="登录密码")):
+    @app.post("/api/users/login", deprecated=True)
+    def login_user(request: Request, username: str = Query(..., min_length=1, max_length=200, description="用户名（手机号或邮箱）"), password: str = Query(..., min_length=1, max_length=128, description="登录密码")):
         """
         用户登录接口
         
         - **username**: 用户名（支持手机号或邮箱）
         - **password**: 登录密码
         """
-        connection = None
-        cursor = None
-        
-        try:
-            connection = get_db_connection()
-            cursor = connection.cursor()
-            
-            query = """
-                SELECT userId, realName, phone, roleId, departmentId, gender, nativePlace, politicalStatus, loginPassword, idCard, email 
-                FROM UsersInfo 
-                WHERE (phone = ? OR email = ?) AND loginPassword = ?
-            """
-            cursor.execute(query, (username, username, password))
-            
-            row = cursor.fetchone()
-            
-            if not row:
-                raise HTTPException(status_code=401, detail="用户名或密码错误")
-            
-            columns = [column[0] for column in cursor.description]
-            user_dict = dict(zip(columns, row))
-            
-            return User(**user_dict)
-            
-        except HTTPException:
-            raise
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"登录失败: {str(e)}")
-        
-        finally:
-            if cursor:
-                cursor.close()
-            if connection:
-                connection.close()
+        result = login(LoginInput(username=username, password=password), request)
+        return dict(result['user'], **{k: v for k, v in result.items() if k != 'user'})
 
     @app.put("/api/users/{user_id}/password")
     def change_password(user_id: int, data: PasswordChange):
@@ -534,18 +513,18 @@ def register_user_routes(app: FastAPI):
             cursor = connection.cursor()
 
             # 2) 校验用户是否存在、原始密码是否正确
-            cursor.execute("SELECT userId, realName, loginPassword FROM UsersInfo WHERE userId = ?", (user_id,))
+            cursor.execute("SELECT userId, realName, loginPassword, passwordHash FROM UsersInfo WHERE userId = ?", (user_id,))
             row = cursor.fetchone()
 
             if not row:
                 raise HTTPException(status_code=404, detail=f"用户ID {user_id} 不存在")
 
-            db_password = row[2]
-            if (db_password or "") != data.oldPassword:
+            if not verify_stored_password(data.oldPassword, row[3], row[2]):
                 raise HTTPException(status_code=400, detail="原始密码错误")
 
             # 3) 更新密码
-            cursor.execute("UPDATE UsersInfo SET loginPassword = ? WHERE userId = ?", (data.newPassword, user_id))
+            cursor.execute("UPDATE UsersInfo SET loginPassword = ?, passwordHash=? WHERE userId = ?", ('', hash_password(data.newPassword), user_id))
+            revoke_user_sessions(cursor, user_id)
             connection.commit()
 
             return {"msg": "密码修改成功", "status": 200, "userId": user_id}

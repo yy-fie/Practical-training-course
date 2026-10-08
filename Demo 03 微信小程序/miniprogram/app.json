@@ -1,0 +1,29 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/index/index",
+    "pages/stations/stations",
+    "pages/station-detail/station-detail",
+    "pages/station-create/station-create",
+    "pages/profile/profile",
+    "pages/password/password"
+  ],
+  "window": {
+    "navigationBarTitleText": "地铁客流",
+    "navigationBarBackgroundColor": "#1E40AF",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F8FAFC",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#475569",
+    "selectedColor": "#1E40AF",
+    "backgroundColor": "#FFFFFF",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "工作台" },
+      { "pagePath": "pages/stations/stations", "text": "站点" },
+      { "pagePath": "pages/profile/profile", "text": "我的" }
+    ]
+  },
+  "sitemapLocation": "sitemap.json"
+}

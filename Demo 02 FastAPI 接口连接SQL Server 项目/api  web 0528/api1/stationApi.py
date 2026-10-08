@@ -24,6 +24,7 @@ def register_station_routes(app: FastAPI):
             
             insert_query = """
                 INSERT INTO stations (station_name, line, district) 
+                OUTPUT INSERTED.station_id
                 VALUES ( ?, ?, ?)
             """
             cursor.execute(insert_query, (
@@ -33,10 +34,11 @@ def register_station_routes(app: FastAPI):
                 station.district
             ))
             
+            created_id = cursor.fetchone()[0]
             connection.commit()
             
-            select_query = "SELECT top  1  station_id, station_name, line, district FROM stations  order by station_id desc"
-            cursor.execute(select_query)
+            select_query = "SELECT station_id, station_name, line, district FROM stations WHERE station_id=?"
+            cursor.execute(select_query, (created_id,))
             row = cursor.fetchone()
             
             if row:

@@ -1,0 +1,19 @@
+<view class="page">
+  <view class="title">{{user.realName || '个人中心'}}</view>
+  <view class="subtitle">更新个人资料，管理账号登录。</view>
+  <view wx:if="{{loading}}" class="card muted">正在加载个人资料…</view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <view wx:if="{{!loading && user.userId}}" class="card">
+    <view class="row"><view class="section-title">基本资料</view><view class="badge">{{canEdit ? '可编辑' : '只读'}}</view></view>
+    <view class="field"><label for="realName" class="label">真实姓名</label><input id="realName" class="input" focus-class="input-focus" value="{{form.realName}}" maxlength="50" disabled="{{!canEdit || saving}}" data-field="realName" bindinput="onInput" /></view>
+    <view class="field"><label for="phone" class="label">手机号</label><input id="phone" class="input" focus-class="input-focus" type="number" value="{{form.phone}}" maxlength="11" disabled="{{!canEdit || saving}}" data-field="phone" bindinput="onInput" /></view>
+    <view class="field"><label for="email" class="label">邮箱</label><input id="email" class="input" focus-class="input-focus" value="{{form.email}}" maxlength="100" disabled="{{!canEdit || saving}}" data-field="email" bindinput="onInput" /></view>
+    <view class="field"><label for="gender" class="label">性别</label><input id="gender" class="input" focus-class="input-focus" value="{{form.gender}}" maxlength="10" disabled="{{!canEdit || saving}}" data-field="gender" bindinput="onInput" /></view>
+    <view class="field"><label for="nativePlace" class="label">籍贯</label><input id="nativePlace" class="input" focus-class="input-focus" value="{{form.nativePlace}}" maxlength="50" disabled="{{!canEdit || saving}}" data-field="nativePlace" bindinput="onInput" /></view>
+    <view class="field"><label for="politicalStatus" class="label">政治面貌</label><input id="politicalStatus" class="input" focus-class="input-focus" value="{{form.politicalStatus}}" maxlength="50" disabled="{{!canEdit || saving}}" data-field="politicalStatus" bindinput="onInput" /></view>
+    <view class="field"><label for="idCard" class="label">身份证号</label><input id="idCard" class="input" focus-class="input-focus" type="idcard" value="{{form.idCard}}" maxlength="18" disabled="{{!canEdit || saving}}" data-field="idCard" bindinput="onInput" /></view>
+    <button wx:if="{{canEdit}}" class="primary" loading="{{saving}}" disabled="{{saving}}" bindtap="save">{{saving ? '正在保存' : '保存资料'}}</button>
+  </view>
+  <button wx:if="{{canChangePassword}}" class="secondary" bindtap="password">修改密码</button>
+  <view class="logout-section"><button class="danger" loading="{{exiting}}" disabled="{{exiting}}" bindtap="logout">退出当前账号</button></view>
+</view>
